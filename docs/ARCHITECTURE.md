@@ -76,7 +76,7 @@ Các module nghiệp vụ:
 - **billing**: hóa đơn và thanh toán.
 - **devices**: thiết bị, MQTT events, trạng thái thiết bị, command.
 - **recognition**: tạo job ALPR, lưu kết quả, xác nhận biển số.
-- **notifications**: cảnh báo vận hành.
+- **alerts**: cảnh báo vận hành và theo dõi trạng thái xử lý cảnh báo thiết bị.
 - **analytics**: công suất, lượt xe, doanh thu.
 
 Controller chỉ điều phối request/response. Quy tắc nghiệp vụ nằm trong service. Dùng Prisma transaction khi một hành động thay đổi nhiều bảng.
