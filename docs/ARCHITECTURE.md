@@ -166,9 +166,10 @@ Quy tắc:
 5. ALPR trả candidate biển số + confidence. Backend lưu recognition result.
 6. Nếu confidence đạt ngưỡng cấu hình và biển số khớp vehicle/reservation, hệ thống đề xuất xe tương ứng; nếu không, nhân viên xác nhận thủ công.
 7. Backend kiểm tra reservation (nếu có), quyền vào bãi, sức chứa và chỗ khả dụng.
-8. Trong transaction: tạo parking session, phân bổ chỗ, cập nhật trạng thái chỗ.
-9. Sau khi transaction commit, backend publish barrier command và phát Socket.IO event.
-10. Node-RED mô phỏng barrier mở và gửi ACK; timeout/ERROR tạo cảnh báo, không giả định barrier đã mở nếu chưa có ACK.
+8. Backend tạo gate operation ở trạng thái PENDING và giữ chỗ/capacity theo transaction; chưa ghi nhận xe đã vào bãi.
+9. Backend publish barrier command có commandId/correlationId và thời hạn hiệu lực.
+10. Node-RED mô phỏng barrier, trả ACK/FAILED; backend đối chiếu command, xử lý trùng và timeout.
+11. Chỉ khi nhận ACK hợp lệ, backend mới hoàn tất bước chuyển session sang ACTIVE và xác nhận vị trí đang sử dụng. Nếu thất bại/timeout, giữ trạng thái chờ hoặc chuyển quy trình fallback thủ công có audit; không giả định xe đã vào.
 
 ## 6. Luồng xe ra
 
@@ -176,9 +177,10 @@ Quy tắc:
 2. Backend tìm parking session ACTIVE trong đúng bãi xe.
 3. Tính phí theo pricing rule áp dụng; hiển thị phí để nhân viên/tài xế xác nhận.
 4. Ghi nhận thanh toán (MVP có thể dùng trạng thái mô phỏng hoặc xác nhận thủ công).
-5. Khi điều kiện ra được đáp ứng, transaction cập nhật invoice/payment/session và giải phóng vị trí.
-6. Sau commit, backend gửi command mở barrier và phát cập nhật realtime.
-7. Node-RED gửi ACK; lỗi thiết bị được ghi nhận thành alert để xử lý.
+5. Backend tạo gate operation EXIT ở trạng thái PENDING; chưa hoàn tất session hoặc giải phóng vị trí.
+6. Backend gửi command mở barrier; Node-RED phản hồi ACK/FAILED.
+7. Chỉ khi ACK hợp lệ (hoặc nhân viên xác nhận fallback có audit), backend mới hoàn tất session, ghi nhận thanh toán theo chính sách đã chốt và giải phóng vị trí trong transaction.
+8. Timeout/FAILED tạo alert và giữ trạng thái có thể đối soát; không tự đánh dấu xe đã rời bãi.
 
 ## 7. Nhận diện biển số: luồng và kiểm soát
 
@@ -259,42 +261,42 @@ smart-parking-system/
 - Chưa triển khai Kubernetes, microservices nghiệp vụ hoặc cloud phức tạp trong đồ án.
 
 
-## 12. Quyết định cần khóa trước khi triển khai nghiệp vụ
+## 13. Quyết định cần khóa trước khi triển khai nghiệp vụ
 
-### 12.1 Luồng vận hành phải có phương án thủ công
+### 13.1 Luồng vận hành phải có phương án thủ công
 - Luồng check-in/check-out thủ công là đường chạy nghiệp vụ chuẩn đầu tiên; MQTT và ALPR chỉ cung cấp tín hiệu đầu vào.
 - Nhân viên được nhập biển số, xác nhận phương tiện và xử lý khi camera/OCR/MQTT/barrier simulator không hoạt động.
 - ALPR và Node-RED không được gọi thẳng database hoặc tự tạo hóa đơn/session.
 - Trạng thái qua luồng thủ công và luồng thiết bị phải đi qua cùng application service.
 
-### 12.2 Trạng thái xe vào/ra và barrier
+### 13.2 Trạng thái xe vào/ra và barrier
 Không coi việc publish MQTT command là bằng chứng barrier đã mở. Phân biệt trạng thái nghiệp vụ với trạng thái thiết bị. Command phải có PENDING, ACKNOWLEDGED, TIMED_OUT hoặc FAILED; session không được tạo lại khi ACK thất bại. Khi thiết bị lỗi, tạo alert và cho phép nhân viên xử lý thủ công/retry có kiểm soát. Với luồng vật lý sau này, cân nhắc trạng thái trung gian ENTRY_PENDING/EXIT_PENDING trước khi chốt session.
 
-### 12.3 Ranh giới tích hợp ALPR
+### 13.3 Ranh giới tích hợp ALPR
 - Frontend upload ảnh lên Express API; Express kiểm tra quyền, loại/kích thước file, lưu media an toàn rồi gọi ALPR nội bộ.
 - Không để browser gọi trực tiếp ALPR service trong MVP; không expose service nội bộ ra Internet.
 - ALPR chỉ trả candidate/confidence/metadata. Backend lưu kết quả và nhân viên xác nhận khi cần.
 - Có timeout, giới hạn kích thước, kiểm tra MIME/content, xóa file tạm và retention policy.
 
-### 12.4 Quy tắc dữ liệu và giao dịch
+### 13.4 Quy tắc dữ liệu và giao dịch
 - Lưu snapshot bảng giá/đơn giá tại thời điểm tạo invoice; không tính lại hóa đơn lịch sử bằng pricing rule hiện hành.
 - Mọi thao tác chiếm/giải phóng chỗ phải chạy trong transaction và có constraint chống hai session ACTIVE cùng chiếm một vị trí.
 - API tạo payment cần idempotency key hoặc unique provider reference để request retry không ghi nhận thanh toán hai lần.
 - Lưu UTC trong database; frontend hiển thị theo Asia/Ho_Chi_Minh.
 - API danh sách phải có pagination, sort/filter allowlist và giới hạn page size.
 
-### 12.5 Bảo mật nền tảng
+### 13.5 Bảo mật nền tảng
 - Validate input ở biên API; rate limit endpoint đăng nhập và upload.
 - Cấu hình CORS theo origin cụ thể, security headers và HTTPS khi triển khai.
 - Không log password, token, ảnh hoặc payload chứa dữ liệu cá nhân không cần thiết.
 - Device credentials tách biệt user credentials và có thể thu hồi/đổi.
 - Socket.IO phải xác thực kết nối và lọc dữ liệu theo role + parking-lot scope; không broadcast dữ liệu toàn hệ thống cho mọi client.
 
-### 12.6 Phạm vi không triển khai sớm
+### 13.6 Phạm vi không triển khai sớm
 Chưa làm thanh toán online thật, mobile app, microservices, Kubernetes, multi-tenant, phần cứng thật hoặc AI model training. Chỉ mở rộng khi luồng nghiệp vụ lõi chạy ổn định.
 
 
-### 12.7 Nhất quán giữa session và barrier ACK
+### 13.7 Nhất quán giữa session và barrier ACK
 
 - Không đánh đồng việc publish command với việc barrier đã mở.
 - Với luồng simulator có ACK, dùng trạng thái trung gian cho thao tác cổng/session: ENTRY_PENDING trước khi xác nhận xe vào hoàn tất; EXIT_PENDING trước khi xác nhận xe ra hoàn tất. Chỉ chuyển sang ACTIVE/COMPLETED khi ACK phù hợp được nhận hoặc nhân viên thực hiện quy trình fallback có audit.
