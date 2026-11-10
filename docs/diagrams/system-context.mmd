@@ -1,0 +1,21 @@
+flowchart TB
+    Driver[Driver]
+    Admin[System Admin]
+    Manager[Parking Manager]
+    Staff[Parking Staff]
+    Web[React Web Application]
+    API[Express Modular Monolith]
+    DB[(PostgreSQL)]
+    MQTT[Mosquitto MQTT Broker]
+    NR[Node-RED Simulator]
+    ALPR[Python FastAPI ALPR]
+
+    Driver --> Web
+    Admin --> Web
+    Manager --> Web
+    Staff --> Web
+    Web <-->|REST / Socket.IO| API
+    API <--> DB
+    API <-->|MQTT publish / subscribe| MQTT
+    NR <-->|MQTT| MQTT
+    API <-->|Internal HTTP| ALPR
