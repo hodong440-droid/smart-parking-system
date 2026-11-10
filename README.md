@@ -105,6 +105,9 @@ smart-parking-system/
 - [Kiến trúc hệ thống](docs/ARCHITECTURE.md)
 - [Thiết kế cơ sở dữ liệu](docs/DATABASE_DESIGN.md)
 - [Kế hoạch triển khai](docs/PROJECT_PLAN.md)
+- [Quy trình quản lý công việc cá nhân và Issue/PR](docs/PERSONAL_WORKFLOW.md)
+
+> Repository này phục vụ một dự án cá nhân. Issue/PR được dùng để tự quản lý công việc và hỗ trợ Mentor review khi cần; không áp dụng phân công thành viên hay trách nhiệm nhóm trưởng báo cáo tuần.
 
 ## 9. Tiêu chí hoàn thành MVP
 
