@@ -1,0 +1,53 @@
+name: Công việc / chức năng
+description: Ghi yêu cầu theo Input – Output – Technical Approach
+title: "[FEATURE] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: input
+    attributes:
+      label: "1. Input – Nhu cầu người dùng"
+      description: "Ai sử dụng? Họ muốn giải quyết vấn đề gì? Mô tả bằng ngôn ngữ tự nhiên."
+      placeholder: "Người dùng muốn..."
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: "2. Output – Kết quả mong muốn"
+      description: "Sau khi hoàn thành, người dùng làm được gì và hệ thống hiển thị/phản hồi ra sao?"
+      placeholder: "Hệ thống cần..."
+    validations:
+      required: true
+  - type: textarea
+    id: technical
+    attributes:
+      label: "3. Technical Approach – Hướng xử lý kỹ thuật"
+      description: "Nêu frontend, backend/API, database, validation, phân quyền, tích hợp và kiểm thử nếu liên quan."
+      placeholder: |
+        - Frontend:
+        - Backend/module/API:
+        - Database (bảng, trường, kiểu dữ liệu, quan hệ, constraint/index):
+        - Validation và phân quyền:
+        - Tích hợp:
+        - Kiểm thử:
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "4. Acceptance Criteria – Tiêu chí nghiệm thu"
+      description: "Checklist cụ thể, có thể kiểm tra."
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: related
+    attributes:
+      label: "5. Issue liên quan / câu hỏi còn mở"
+      description: "Liên kết Issue bằng #number; ghi giả định hoặc câu hỏi cần xác minh."
+    validations:
+      required: false
