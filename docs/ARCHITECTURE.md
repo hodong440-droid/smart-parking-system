@@ -292,3 +292,12 @@ Không coi việc publish MQTT command là bằng chứng barrier đã mở. Ph�
 
 ### 12.6 Phạm vi không triển khai sớm
 Chưa làm thanh toán online thật, mobile app, microservices, Kubernetes, multi-tenant, phần cứng thật hoặc AI model training. Chỉ mở rộng khi luồng nghiệp vụ lõi chạy ổn định.
+
+
+### 12.7 Nhất quán giữa session và barrier ACK
+
+- Không đánh đồng việc publish command với việc barrier đã mở.
+- Với luồng simulator có ACK, dùng trạng thái trung gian cho thao tác cổng/session: ENTRY_PENDING trước khi xác nhận xe vào hoàn tất; EXIT_PENDING trước khi xác nhận xe ra hoàn tất. Chỉ chuyển sang ACTIVE/COMPLETED khi ACK phù hợp được nhận hoặc nhân viên thực hiện quy trình fallback có audit.
+- Giữ reservation/space ở trạng thái giữ chỗ trong thời gian chờ; timeout phải có thời hạn, retry idempotent và thao tác giải phóng/đối soát rõ ràng.
+- Nếu chọn phương án đơn giản hơn cho demo, vẫn phải lưu gate operation riêng và không ghi nhận barrier OPEN nếu chưa có ACK.
+- Chốt state machine cụ thể trong implementation Issue #12 trước khi viết migration; cập nhật enum/constraint tương ứng trong DATABASE_DESIGN.md.
