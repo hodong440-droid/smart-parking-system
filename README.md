@@ -118,3 +118,27 @@ smart-parking-system/
 - ALPR nhận ảnh/video mẫu, trả biển số và confidence; có bước nhân viên xác nhận.
 - Có test cho luồng xe vào/ra, phân quyền, event trùng và nhận diện thất bại.
 - README và tài liệu phản ánh đúng chức năng đã thực sự chạy được.
+
+
+## 10. Thứ tự triển khai khuyến nghị
+
+1. Docker Compose + PostgreSQL + Mosquitto.
+2. Backend foundation + Prisma migration.
+3. Frontend foundation.
+4. Authentication/RBAC.
+5. Nghiệp vụ gửi xe thủ công: bãi xe → phương tiện/reservation → session → invoice/payment.
+6. ALPR và MQTT/Node-RED sau khi luồng thủ công ổn định.
+7. Dashboard/realtime, kiểm thử tổng thể và đóng gói.
+
+Luồng xe vào/ra thủ công phải hoạt động độc lập khi ALPR, MQTT hoặc Node-RED tắt. Các tích hợp chỉ cung cấp tín hiệu, không nắm quyền quyết định nghiệp vụ.
+
+## 11. Tình trạng triển khai và quản lý GitHub
+
+- main là nhánh ổn định; phát triển qua branch theo Issue và Pull Request.
+- Một Issue đại diện một kết quả có thể nghiệm thu; không tạo Issue cho từng file/hàm.
+- PR phải liên kết Issue bằng Closes #<number> và có bằng chứng kiểm thử.
+- Chỉ đóng Issue sau khi tiêu chí nghiệm thu đạt và PR đã merge.
+- Repository Private; chỉ cấp quyền cho Mentor bằng GitHub username chính xác khi được yêu cầu.
+- Tài liệu kiến trúc là mục tiêu thiết kế, không đồng nghĩa chức năng đã được code hoặc kiểm thử.
+
+Xem Roadmap thực thi (docs/PROJECT_PLAN.md), Quy trình cá nhân (docs/PERSONAL_WORKFLOW.md) và Backlog triển khai (docs/IMPLEMENTATION_BACKLOG.md).
