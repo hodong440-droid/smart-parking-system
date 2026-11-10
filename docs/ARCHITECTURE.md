@@ -76,7 +76,7 @@ Các module nghiệp vụ:
 - **billing**: hóa đơn và thanh toán.
 - **devices**: thiết bị, MQTT events, trạng thái thiết bị, command.
 - **recognition**: tạo job ALPR, lưu kết quả, xác nhận biển số.
-- **notifications**: cảnh báo vận hành.
+- **alerts**: cảnh báo vận hành và theo dõi trạng thái xử lý cảnh báo thiết bị.
 - **analytics**: công suất, lượt xe, doanh thu.
 
 Controller chỉ điều phối request/response. Quy tắc nghiệp vụ nằm trong service. Dùng Prisma transaction khi một hành động thay đổi nhiều bảng.
@@ -257,3 +257,47 @@ smart-parking-system/
 - Có log correlationId để lần theo một lượt xe qua nhiều thành phần.
 - Viết contract test cho MQTT payload và API giữa Express ↔ ALPR.
 - Chưa triển khai Kubernetes, microservices nghiệp vụ hoặc cloud phức tạp trong đồ án.
+
+
+## 12. Quyết định cần khóa trước khi triển khai nghiệp vụ
+
+### 12.1 Luồng vận hành phải có phương án thủ công
+- Luồng check-in/check-out thủ công là đường chạy nghiệp vụ chuẩn đầu tiên; MQTT và ALPR chỉ cung cấp tín hiệu đầu vào.
+- Nhân viên được nhập biển số, xác nhận phương tiện và xử lý khi camera/OCR/MQTT/barrier simulator không hoạt động.
+- ALPR và Node-RED không được gọi thẳng database hoặc tự tạo hóa đơn/session.
+- Trạng thái qua luồng thủ công và luồng thiết bị phải đi qua cùng application service.
+
+### 12.2 Trạng thái xe vào/ra và barrier
+Không coi việc publish MQTT command là bằng chứng barrier đã mở. Phân biệt trạng thái nghiệp vụ với trạng thái thiết bị. Command phải có PENDING, ACKNOWLEDGED, TIMED_OUT hoặc FAILED; session không được tạo lại khi ACK thất bại. Khi thiết bị lỗi, tạo alert và cho phép nhân viên xử lý thủ công/retry có kiểm soát. Với luồng vật lý sau này, cân nhắc trạng thái trung gian ENTRY_PENDING/EXIT_PENDING trước khi chốt session.
+
+### 12.3 Ranh giới tích hợp ALPR
+- Frontend upload ảnh lên Express API; Express kiểm tra quyền, loại/kích thước file, lưu media an toàn rồi gọi ALPR nội bộ.
+- Không để browser gọi trực tiếp ALPR service trong MVP; không expose service nội bộ ra Internet.
+- ALPR chỉ trả candidate/confidence/metadata. Backend lưu kết quả và nhân viên xác nhận khi cần.
+- Có timeout, giới hạn kích thước, kiểm tra MIME/content, xóa file tạm và retention policy.
+
+### 12.4 Quy tắc dữ liệu và giao dịch
+- Lưu snapshot bảng giá/đơn giá tại thời điểm tạo invoice; không tính lại hóa đơn lịch sử bằng pricing rule hiện hành.
+- Mọi thao tác chiếm/giải phóng chỗ phải chạy trong transaction và có constraint chống hai session ACTIVE cùng chiếm một vị trí.
+- API tạo payment cần idempotency key hoặc unique provider reference để request retry không ghi nhận thanh toán hai lần.
+- Lưu UTC trong database; frontend hiển thị theo Asia/Ho_Chi_Minh.
+- API danh sách phải có pagination, sort/filter allowlist và giới hạn page size.
+
+### 12.5 Bảo mật nền tảng
+- Validate input ở biên API; rate limit endpoint đăng nhập và upload.
+- Cấu hình CORS theo origin cụ thể, security headers và HTTPS khi triển khai.
+- Không log password, token, ảnh hoặc payload chứa dữ liệu cá nhân không cần thiết.
+- Device credentials tách biệt user credentials và có thể thu hồi/đổi.
+- Socket.IO phải xác thực kết nối và lọc dữ liệu theo role + parking-lot scope; không broadcast dữ liệu toàn hệ thống cho mọi client.
+
+### 12.6 Phạm vi không triển khai sớm
+Chưa làm thanh toán online thật, mobile app, microservices, Kubernetes, multi-tenant, phần cứng thật hoặc AI model training. Chỉ mở rộng khi luồng nghiệp vụ lõi chạy ổn định.
+
+
+### 12.7 Nhất quán giữa session và barrier ACK
+
+- Không đánh đồng việc publish command với việc barrier đã mở.
+- Với luồng simulator có ACK, dùng trạng thái trung gian cho thao tác cổng/session: ENTRY_PENDING trước khi xác nhận xe vào hoàn tất; EXIT_PENDING trước khi xác nhận xe ra hoàn tất. Chỉ chuyển sang ACTIVE/COMPLETED khi ACK phù hợp được nhận hoặc nhân viên thực hiện quy trình fallback có audit.
+- Giữ reservation/space ở trạng thái giữ chỗ trong thời gian chờ; timeout phải có thời hạn, retry idempotent và thao tác giải phóng/đối soát rõ ràng.
+- Nếu chọn phương án đơn giản hơn cho demo, vẫn phải lưu gate operation riêng và không ghi nhận barrier OPEN nếu chưa có ACK.
+- Chốt state machine cụ thể trong implementation Issue #12 trước khi viết migration; cập nhật enum/constraint tương ứng trong DATABASE_DESIGN.md.

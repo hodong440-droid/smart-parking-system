@@ -30,3 +30,27 @@ Thumbs.db
 
 # Prisma local artifacts
 backend/src/generated/prisma/
+
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+.envrc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local runtime data and uploads
+uploads/
+media/
+storage/
+data/local/
+
+# Node-RED local credentials and runtime data
+.iot-node-red/
+node-red-data/
