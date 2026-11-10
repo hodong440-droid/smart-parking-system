@@ -86,7 +86,7 @@ Một job có thể có nhiều candidate result. Nếu chỉ cần một kết 
 - `parking_sessions 1—0..1 invoices`; `invoices 1—N payments`.
 - `parking_lots 1—N devices`; `devices 1—N device_events`; `devices 1—N device_commands`.
 - `parking_lots 1—N recognition_jobs`; `recognition_jobs 1—N recognition_results`.
-- `recognition_jobs N—1 media_assets` hoặc liên kết media theo thiết kế quan hệ cụ thể khi tạo Prisma schema.
+- `recognition_jobs N—1 media_assets` qua `recognition_jobs.media_asset_id` cho ảnh đầu vào chính; nếu một job cần nhiều ảnh/frame thì dùng bảng nối `recognition_job_media`.
 - `parking_lots 1—N media_assets`.
 
 ## 4. Ràng buộc và index quan trọng
@@ -103,6 +103,8 @@ Một job có thể có nhiều candidate result. Nếu chỉ cần một kết 
 - Unique `invoices.parking_session_id` nếu nghiệp vụ chỉ cho một hóa đơn chính trên mỗi lượt.
 - Index `device_events(received_at)`, `device_events(processing_status)`, `recognition_jobs(created_at, status)`.
 - Reservation phải có `end_at > start_at`; pricing rule có khoảng hiệu lực hợp lệ.
+- `recognition_jobs.media_asset_id` là FK tới `media_assets` cho ảnh chính; không để quan hệ media ở dạng ghi chú mơ hồ.
+- Nếu triển khai luồng cổng có ACK barrier, session cần trạng thái trung gian `ENTRY_PENDING`/`EXIT_PENDING` hoặc một bảng gate operation riêng; chỉ chuyển sang `ACTIVE`/`COMPLETED` theo chính sách ACK/fallback đã chốt.
 - Dùng transaction và constraint phù hợp để tránh overbooking/chiếm trùng vị trí khi có request đồng thời.
 
 ## 5. Enum nghiệp vụ đề xuất
