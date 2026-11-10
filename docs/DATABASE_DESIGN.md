@@ -29,7 +29,7 @@ Role dùng enum `SYSTEM_ADMIN`, `PARKING_MANAGER`, `PARKING_STAFF`, `DRIVER` ở
 | parking_zones | Khu vực trong bãi | id, parking_lot_id, code, name |
 | parking_spaces | Vị trí đỗ | id, parking_zone_id, code, space_type, status |
 | parking_gates | Cổng vào/ra | id, parking_lot_id, code, name, gate_type, status |
-| pricing_rules | Quy tắc tính phí | id, parking_lot_id, vehicle_type, pricing_type, amount, effective_from, effective_to |
+| pricing_rules | Quy tắc tính phí | id, parking_lot_id, vehicle_type, pricing_type, amount, billing_unit, rounding_unit, grace_period_minutes, minimum_amount, effective_from, effective_to, status |
 
 ### 2.3 Phương tiện và gửi xe
 
@@ -37,7 +37,7 @@ Role dùng enum `SYSTEM_ADMIN`, `PARKING_MANAGER`, `PARKING_STAFF`, `DRIVER` ở
 |---|---|---|
 | vehicles | Phương tiện của tài xế | id, owner_user_id, plate_number, normalized_plate, vehicle_type, status |
 | reservations | Đặt chỗ | id, user_id, vehicle_id, parking_lot_id, start_at, end_at, status |
-| parking_sessions | Lượt xe vào/ra | id, parking_lot_id, vehicle_id, space_id, entry_gate_id, exit_gate_id, check_in_at, check_out_at, status, pricing_rule_id |
+| parking_sessions | Lượt xe vào/ra | id, parking_lot_id, vehicle_id, space_id, entry_gate_id, exit_gate_id, plate_snapshot, check_in_at, check_out_at, status, pricing_rule_id, pricing_snapshot_json |
 
 Reservation và parking session là hai khái niệm khác nhau. MVP có thể phân bổ vị trí cụ thể khi xe đến thay vì giữ một vị trí cố định ngay lúc đặt chỗ.
 
@@ -45,8 +45,8 @@ Reservation và parking session là hai khái niệm khác nhau. MVP có thể p
 
 | Bảng | Mục đích | Trường chính |
 |---|---|---|
-| invoices | Hóa đơn của lượt gửi xe | id, parking_session_id, subtotal, discount_amount, total_amount, status, issued_at |
-| payments | Giao dịch thanh toán | id, invoice_id, amount, method, status, provider_reference, paid_at |
+| invoices | Hóa đơn của lượt gửi xe | id, parking_session_id, subtotal, discount_amount, total_amount, currency, pricing_snapshot_json, status, issued_at, due_at, paid_at |
+| payments | Giao dịch thanh toán | id, invoice_id, amount, method, status, idempotency_key, provider_reference, confirmed_by, paid_at, refunded_at |
 
 ### 2.5 Thiết bị, MQTT và simulator
 
@@ -63,7 +63,7 @@ Reservation và parking session là hai khái niệm khác nhau. MVP có thể p
 
 | Bảng | Mục đích | Trường chính |
 |---|---|---|
-| recognition_jobs | Yêu cầu xử lý ảnh/video | id, parking_lot_id, gate_id, direction, source_type, status, correlation_id, requested_by, created_at, completed_at |
+| recognition_jobs | Yêu cầu xử lý ảnh/video | id, parking_lot_id, gate_id, media_asset_id, direction, source_type, status, correlation_id, requested_by, created_at, completed_at |
 | recognition_results | Kết quả OCR theo từng job | id, job_id, candidate_plate, normalized_plate, confidence, engine_name, engine_version, processing_time_ms, review_status, confirmed_plate, reviewed_by, reviewed_at |
 | media_assets | Metadata ảnh/video bằng chứng | id, parking_lot_id, storage_key, media_type, file_size, captured_at, expires_at, created_at |
 
@@ -115,7 +115,7 @@ Một job có thể có nhiều candidate result. Nếu chỉ cần một kết 
 - SpaceStatus: AVAILABLE, OCCUPIED, RESERVED, OUT_OF_SERVICE.
 - GateType: ENTRY, EXIT, BOTH.
 - ReservationStatus: PENDING, CONFIRMED, CANCELLED, EXPIRED, COMPLETED.
-- ParkingSessionStatus: ACTIVE, COMPLETED, CANCELLED.
+- ParkingSessionStatus: ENTRY_PENDING, ACTIVE, EXIT_PENDING, COMPLETED, CANCELLED.
 - InvoiceStatus: UNPAID, PAID, VOID, REFUNDED.
 - PaymentStatus: PENDING, SUCCEEDED, FAILED, REFUNDED.
 - DeviceType: GATE_CONTROLLER, BARRIER, ENTRY_SENSOR, SPACE_SENSOR, CAMERA.
