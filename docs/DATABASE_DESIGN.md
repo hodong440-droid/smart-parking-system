@@ -153,3 +153,52 @@ Tên enum và trường là đặc tả ban đầu; rà soát cùng Prisma schem
 4. Thời hạn lưu ảnh/video và ai được phép xem/xóa.
 5. Một job ALPR có cần giữ top-N candidate hay chỉ candidate tốt nhất.
 6. Phương thức thanh toán MVP: mô phỏng, tiền mặt xác nhận tại quầy hay tích hợp cổng thật.
+
+
+## 9. Các điểm bắt buộc chốt trước khi viết Prisma schema
+
+Thiết kế hiện tại là logical design, chưa đủ để migrate trực tiếp. Áp dụng các quy tắc sau khi chuyển thành Prisma schema:
+
+### 9.1 Parking sessions và vị trí
+- Quy định rõ thời điểm phân bổ vị trí; nếu cho phép nhận xe trước khi có vị trí thì parking_sessions.space_id phải nullable.
+- Lưu check_in_at/check_out_at bằng timestamptz; check_out_at null khi session còn hoạt động.
+- Lưu snapshot biển số tại thời điểm vào, pricing rule/version áp dụng và mốc thời gian tính phí.
+- Partial unique index: tối đa một session ACTIVE cho mỗi space_id; cân nhắc thêm unique ACTIVE theo parking_lot_id + vehicle_id.
+- Trạng thái parking_spaces phải được cập nhật cùng session/reservation trong transaction; không dùng status để thay thế lịch sử.
+
+### 9.2 Reservation và sức chứa
+Khuyến nghị MVP: reservation giữ một suất theo capacity của bãi/khu vực trong khoảng thời gian, chưa khóa space_id cụ thể; nhân viên phân chỗ khi xe đến.
+- Kiểm tra khoảng thời gian chồng lấn và capacity trong transaction/locking phù hợp; unique index thông thường không đủ chống overbooking theo time range.
+- Có expires_at, quy tắc no-show/cancel và job giải phóng reservation hết hạn.
+- Nếu sau này đặt vị trí cụ thể, bổ sung space_id và chiến lược exclusion/locking phù hợp.
+
+### 9.3 Pricing, invoice và payment
+- pricing_rules phải mô tả pricing type, đơn vị tính, chu kỳ làm tròn, grace period, mức tối thiểu/tối đa, effective range và vehicle type.
+- Invoice lưu snapshot pricing hoặc invoice items, subtotal, discount_amount, total_amount, currency, issued_at, due_at và paid_at.
+- Không cập nhật/xóa cứng pricing rule đã được dùng; quản lý bằng effective date và status.
+- Payment cần idempotency_key hoặc unique provider + provider_reference; ghi người xác nhận cho thanh toán tiền mặt/thủ công.
+- Một invoice có thể có nhiều payment attempt; phải định nghĩa partial payment, thất bại, hoàn tiền và đối soát. Không mặc định mỗi invoice chỉ có một payment.
+- Tiền dùng numeric(12,2); quy tắc làm tròn nằm trong service, không dùng float/double.
+
+### 9.4 Media và ALPR
+- Chọn quan hệ rõ ràng: recognition_jobs.media_asset_id FK tới media_assets cho ảnh đầu vào chính; nếu một job có nhiều ảnh/frame thì dùng bảng nối recognition_job_media.
+- recognition_results.job_id FK tới job; một job có thể có nhiều candidate.
+- confirmed_plate chỉ được ghi qua thao tác review có quyền; lưu người review, thời điểm và giá trị trước/sau nếu cần audit.
+- Storage key không phải URL public. API tải media phải kiểm tra quyền theo parking-lot scope và retention.
+
+### 9.5 Thiết bị và event
+- device_events.event_id unique toàn hệ thống; event trùng phải trả kết quả idempotent, không tạo lại session/command.
+- Thêm processed_at, failure_code/failure_message có giới hạn độ dài để hỗ trợ retry.
+- device_commands cần correlation_id, attempt, expires_at và ack payload hoặc bảng acknowledgements nếu một command có nhiều lần ACK.
+- Credential thiết bị không lưu dạng rõ trong bảng devices; dùng secret/env hoặc cơ chế hash/rotation.
+
+### 9.6 Tài khoản, audit và thông báo
+- users.email unique sau normalize lowercase; quyết định email có bắt buộc với DRIVER hay không trước khi chọn NOT NULL.
+- Quy định chuẩn hóa phone và unique có điều kiện nếu phone dùng đăng nhập.
+- audit_logs nên có actor, action, resource type/id, occurred_at, request/correlation id và metadata đã loại secret.
+- Architecture hiện mô tả module notifications nhưng DB chưa có bảng notifications. MVP nên dùng alerts cho cảnh báo vận hành; bỏ module notifications độc lập tới khi có nhu cầu inbox cho tài xế. Nếu triển khai inbox, bổ sung notifications và notification_reads.
+
+### 9.7 Kỷ luật migration
+- Không tạo migration trực tiếp từ tài liệu. Chuyển thành Prisma schema, chạy format/validate, review SQL migration và kiểm thử trên database rỗng.
+- Kiểm thử unique/check/partial index bằng migration SQL bổ sung khi Prisma schema không biểu diễn đầy đủ.
+- Có seed dữ liệu demo giả lập; không seed tài khoản/mật khẩu production.
