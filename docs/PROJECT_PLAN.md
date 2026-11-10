@@ -115,3 +115,12 @@ Lý do: nếu nghiệp vụ session/chỗ đỗ chưa ổn định, thêm MQTT v
 - Dashboard cập nhật realtime từ trạng thái đã lưu trong database.
 - Có test cho các tình huống chính và tình huống lỗi.
 - Có hướng dẫn cài đặt/demo; không tuyên bố nhận diện chính xác tuyệt đối nếu chưa có kết quả benchmark.
+
+
+## 8. Quy trình triển khai và theo dõi dự án cá nhân
+
+Dự án do một người trực tiếp phân tích, thiết kế và triển khai. GitHub Issues dùng để quản lý từng chức năng/lỗi; mỗi Issue phải có Input, Output, Technical Approach và Acceptance Criteria. Công việc được triển khai theo từng Issue, tạo branch/PR và chỉ đóng Issue sau khi nghiệm thu.
+
+Các yêu cầu về nhóm trưởng tổng hợp báo cáo tuần, tạo sheet mới và gửi trước 14:00 Thứ Bảy là hướng dẫn chung cho nhóm, không phải trách nhiệm của chủ dự án cá nhân này. Chỉ lập báo cáo cá nhân nếu Mentor yêu cầu riêng.
+
+Chi tiết: [PERSONAL_WORKFLOW.md](PERSONAL_WORKFLOW.md).
