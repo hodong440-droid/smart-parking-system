@@ -79,3 +79,24 @@ Các yêu cầu về nhóm trưởng tổng hợp báo cáo tuần, tạo sheet 
 - [ ] PR liên kết đúng Issue và đã được review phù hợp.
 - [ ] Tài liệu liên quan đã cập nhật.
 - [ ] Thay đổi đã merge; Issue được đóng sau nghiệm thu.
+
+
+## 8. Quy ước tên và liên kết
+- Feature: feature/<issue-number>-<short-name>
+- Bug fix: fix/<issue-number>-<short-name>
+- Documentation: docs/<issue-number>-<short-name>
+- Commit nên ngắn gọn theo hành động: feat:, fix:, docs:, test:.
+- PR body phải có Closes #<number>; không gắn một PR vào nhiều Issue lớn không liên quan.
+- Dùng GitHub Issue task template; không tạo Issue chỉ để báo cáo tuần hoặc phân công thành viên.
+
+## 9. Labels và trạng thái
+Dùng labels để phân loại loại công việc (feature, bug, docs, infrastructure, security, testing). Dùng trạng thái Issue/Project để theo dõi tiến độ (Backlog, Ready, In Progress, In Review, Done); không dùng label thay cho trạng thái.
+Với dự án một người, không cần quy trình phê duyệt nhiều tầng hoặc nhiều reviewer bắt buộc. Tự review diff và test là tối thiểu; Mentor review khi có yêu cầu hoặc tại mốc đánh giá.
+
+## 10. Checklist trước khi tạo Issue
+- [ ] Đây là kết quả độc lập có thể nghiệm thu, không phải task quá nhỏ.
+- [ ] Input mô tả nhu cầu/ngữ cảnh bằng ngôn ngữ người dùng.
+- [ ] Output mô tả hành vi thành công và lỗi.
+- [ ] Technical Approach đủ để bắt đầu, nhưng không biến giả định chưa xác nhận thành quyết định.
+- [ ] Acceptance Criteria có thể kiểm tra.
+- [ ] Đã liên kết Issue phụ thuộc; không tạo vòng phụ thuộc.
