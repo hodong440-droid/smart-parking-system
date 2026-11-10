@@ -1,123 +1,137 @@
 # Smart Parking System
+### Nền tảng quản lý tập trung nhiều bãi đỗ xe
 
-Nền tảng quản lý tập trung nhiều bãi đỗ xe, kết hợp mô phỏng IoT và nhận diện biển số bằng xử lý ảnh.
+[![Status](https://img.shields.io/badge/status-in%20development-orange)]()
+[![Architecture](https://img.shields.io/badge/architecture-modular--monolith-blue)]()
+[![Backend](https://img.shields.io/badge/backend-Node.js%20%7C%20Express-green)]()
+[![Frontend](https://img.shields.io/badge/frontend-React%20%7C%20TypeScript-blue)]()
+[![Database](https://img.shields.io/badge/database-PostgreSQL-316192)]()
 
-> **Trạng thái hiện tại:** repository đang ở giai đoạn đặc tả và chuẩn bị triển khai. Chưa có ứng dụng nghiệp vụ chạy được, chưa có Prisma migration, MQTT flow hoặc ALPR service đã kiểm thử.
+## 1. Giới thiệu đề tài
 
-## 1. Phạm vi đã chốt
-- Một nền tảng quản lý tập trung nhiều bãi xe tại các địa điểm khác nhau.
-- Không có Organization, Company, Tenant hoặc lớp quản lý doanh nghiệp.
-- Mô phỏng IoT mức 2: website + Node-RED + Mosquitto MQTT; chưa yêu cầu phần cứng thật.
-- ALPR nằm trong phạm vi MVP: Python + OpenCV + OCR, chạy trên ảnh/video thử nghiệm.
-- Có thể tích hợp ESP32, cảm biến và barrier vật lý ở giai đoạn mở rộng mà không viết lại nghiệp vụ lõi.
+**Smart Parking System** là đề tài xây dựng nền tảng web quản lý tập trung nhiều bãi đỗ xe. Hệ thống hướng tới số hóa các hoạt động quản lý bãi xe, kiểm soát phương tiện vào/ra, theo dõi vị trí đỗ, tính phí và tra cứu lịch sử. Đề tài đồng thời nghiên cứu khả năng ứng dụng nhận diện biển số (ALPR) và mô phỏng thiết bị IoT trong quy trình vận hành.
 
-## 2. Công nghệ mục tiêu
-| Thành phần | Công nghệ | Trách nhiệm |
+Dự án được thực hiện theo định hướng đồ án/thực tập chuyên ngành Công nghệ thông tin, từ phân tích yêu cầu, thiết kế kiến trúc và cơ sở dữ liệu đến triển khai, kiểm thử và đánh giá.
+
+> **Trạng thái phát triển:** Repository hiện đang ở giai đoạn phân tích, thiết kế và chuẩn bị triển khai. Các chức năng mô tả trong tài liệu là phạm vi/mục tiêu của hệ thống, không phải tuyên bố rằng ứng dụng đã hoàn thành.
+
+## 2. Bài toán và mục tiêu
+
+Hoạt động tại bãi đỗ xe cần quản lý đồng bộ sức chứa, vị trí đỗ, thông tin phương tiện, lượt gửi, hóa đơn và trạng thái thanh toán. Khi dữ liệu được theo dõi rời rạc, nhân viên khó cập nhật tức thời và người quản lý khó tổng hợp tình hình hoạt động.
+
+Mục tiêu của đề tài là xây dựng một hệ thống tập trung giúp:
+- Quản lý nhiều bãi xe trên cùng một nền tảng.
+- Chuẩn hóa quy trình xe vào, xe ra và tính phí.
+- Phân quyền theo vai trò và phạm vi bãi xe.
+- Hỗ trợ nhận diện biển số từ ảnh/video, có nhân viên xác nhận kết quả.
+- Mô phỏng cổng, barrier và cảm biến thông qua MQTT.
+- Cung cấp dashboard, lịch sử và cảnh báo vận hành.
+
+## 3. Phạm vi đề tài
+
+**Trong phạm vi MVP**
+- Quản lý tài khoản, vai trò và phân công nhân sự.
+- Quản lý bãi xe, khu vực, vị trí đỗ, cổng và bảng giá.
+- Quản lý phương tiện, reservation và parking session.
+- Check-in/check-out, hóa đơn và ghi nhận thanh toán thủ công/mô phỏng.
+- ALPR trên ảnh/video thử nghiệm.
+- IoT simulator sử dụng Node-RED và Mosquitto MQTT.
+- Dashboard, realtime, audit log và cảnh báo cơ bản.
+
+**Ngoài phạm vi MVP**
+- Không có lớp Organization/Company/Tenant.
+- Không bắt buộc phần cứng thật.
+- Không tích hợp cổng thanh toán trực tuyến thật.
+- Không xây dựng mobile app hoặc tách nghiệp vụ thành microservices.
+
+## 4. Đối tượng sử dụng
+
+| Vai trò | Trách nhiệm |
+|---|---|
+| SYSTEM_ADMIN | Quản lý tài khoản, bãi xe và phân công nhân sự |
+| PARKING_MANAGER | Quản lý các bãi xe được giao |
+| PARKING_STAFF | Vận hành xe vào/ra và xử lý nghiệp vụ tại bãi |
+| DRIVER | Quản lý phương tiện, tìm bãi, đặt chỗ và theo dõi lượt gửi |
+
+Một tài khoản manager/staff có thể được phân công vào nhiều bãi. Backend kiểm tra quyền theo cả vai trò và phạm vi bãi được giao.
+
+## 5. Kiến trúc và công nghệ
+
+| Thành phần | Công nghệ | Vai trò |
 |---|---|---|
-| Frontend | React, TypeScript, Tailwind CSS | Giao diện Admin, Manager, Staff, Driver |
-| Backend | Node.js, Express, TypeScript | API, nghiệp vụ, phân quyền, điều phối |
-| Database | PostgreSQL + Prisma | Dữ liệu nghiệp vụ và lịch sử |
-| Realtime | Socket.IO | Cập nhật trạng thái tới trình duyệt |
-| MQTT broker | Mosquitto | Chuyển tiếp event/command |
-| IoT simulator | Node-RED | Mô phỏng cổng, barrier và cảm biến |
-| ALPR | Python, FastAPI, OpenCV, OCR adapter | Nhận ảnh/video và trả candidate biển số |
-| Local environment | Docker Compose | Khởi chạy các dịch vụ nền |
+| Frontend | React, TypeScript, Tailwind CSS | Giao diện web |
+| Backend | Node.js, Express, TypeScript | API và nghiệp vụ |
+| ORM | Prisma | Truy cập dữ liệu, migration |
+| Database | PostgreSQL | Lưu trữ dữ liệu |
+| Realtime | Socket.IO | Cập nhật trạng thái |
+| MQTT Broker | Eclipse Mosquitto | Trung chuyển thông điệp IoT |
+| IoT Simulator | Node-RED | Mô phỏng thiết bị/cổng/barrier |
+| ALPR Service | Python, FastAPI, OpenCV, OCR adapter | Nhận diện biển số |
+| Local Environment | Docker Compose | Môi trường phát triển |
 
-OCR engine chỉ được chốt sau khi benchmark trên bộ ảnh biển số Việt Nam phù hợp. Không tuyên bố accuracy trước khi đo.
+### Sơ đồ kiến trúc khái quát
 
-## 3. Vai trò hệ thống
-- `SYSTEM_ADMIN`: quản trị tài khoản, bãi xe và phân công nhân sự.
-- `PARKING_MANAGER`: quản lý các bãi được giao.
-- `PARKING_STAFF`: xử lý xe vào/ra và vận hành tại bãi được giao.
-- `DRIVER`: quản lý phương tiện, tìm bãi, đặt chỗ, theo dõi lượt gửi và thanh toán.
-
-Backend phải kiểm tra cả role và phạm vi bãi xe được phân công. Ẩn nút trên frontend không phải cơ chế bảo mật.
-
-## 4. Phạm vi chức năng MVP
-1. Tài khoản, xác thực, RBAC và phân công nhân sự theo bãi.
-2. Quản lý nhiều bãi xe, khu vực, vị trí đỗ, cổng và bảng giá.
-3. Quản lý phương tiện, reservation và parking session.
-4. Xe vào/ra, tính phí, hóa đơn và ghi nhận thanh toán MVP.
-5. Sơ đồ bãi xe, dashboard và realtime.
-6. Node-RED Parking Simulator giao tiếp với backend qua MQTT.
-7. ALPR đọc ảnh/video; lưu candidate, confidence và cho phép nhân viên xác nhận/sửa.
-8. Nhật ký, cảnh báo và báo cáo vận hành.
-
-## 5. Kiến trúc tổng quan
 ```text
 React Web --REST/Socket.IO--> Express Modular Monolith <--> PostgreSQL
                                       |
-                                 MQTT Client
+                                  MQTT Client
                                       |
                                 Mosquitto Broker
                                       ^
                                       | MQTT
                               Node-RED Simulator
 
-Express API --internal HTTP--> Python FastAPI ALPR
+Express API --HTTP nội bộ--> Python FastAPI ALPR
 ```
 
-Backend là nguồn dữ liệu chuẩn cho trạng thái nghiệp vụ. MQTT chỉ truyền thông điệp thiết bị. Node-RED mô phỏng thiết bị; ALPR chỉ trả kết quả nhận diện, không tự tạo session hoặc mở barrier.
+Backend là nơi quyết định nghiệp vụ và lưu trạng thái chuẩn. Node-RED chỉ mô phỏng thiết bị; ALPR chỉ cung cấp kết quả nhận diện. Luồng gửi xe thủ công phải hoạt động ngay cả khi MQTT hoặc ALPR không khả dụng.
 
-## 6. Nguyên tắc kỹ thuật
-- Không tạo bảng Organization/Company/Tenant.
-- Một tài khoản manager/staff có thể được phân công vào nhiều bãi.
-- Reservation, parking session, recognition result và device event là các khái niệm riêng.
-- MQTT event có eventId; backend xác thực device/gate và xử lý idempotent.
-- Chỉ backend quyết định nghiệp vụ; barrier chỉ được điều khiển sau khi backend chấp thuận.
-- OCR là gợi ý, phải có manual review khi confidence thấp hoặc kết quả không chắc chắn.
-- Không lưu binary ảnh/video trong PostgreSQL; chỉ lưu metadata và storage key.
-- Không commit secret, token, ảnh biển số thật hoặc dữ liệu cá nhân vào Git.
-- Luồng gửi xe thủ công phải hoạt động khi MQTT/ALPR tắt.
+## 6. Tài liệu dự án
 
-## 7. Cấu trúc repository mục tiêu
+| Tài liệu | Nội dung |
+|---|---|
+| [Tổng quan đề tài](docs/PROJECT_OVERVIEW.md) | Bối cảnh, bài toán, mục tiêu, phạm vi, đối tượng và phương pháp |
+| [Đặc tả yêu cầu](docs/REQUIREMENTS_SPECIFICATION.md) | Tác nhân, yêu cầu chức năng, phi chức năng và quy tắc nghiệp vụ |
+| [Kiến trúc hệ thống](docs/ARCHITECTURE.md) | Thành phần, trách nhiệm, luồng giao tiếp và quyết định kiến trúc |
+| [Thiết kế cơ sở dữ liệu](docs/DATABASE_DESIGN.md) | Bảng dữ liệu, trường, quan hệ và ràng buộc |
+| [Kế hoạch triển khai](docs/PROJECT_PLAN.md) | Giai đoạn, thứ tự triển khai và kịch bản demo |
+| [Kế hoạch kiểm thử](docs/TEST_AND_EVALUATION.md) | Chiến lược test, test case và tiêu chí đánh giá |
+| [Backlog](docs/IMPLEMENTATION_BACKLOG.md) | Danh sách công việc và phụ thuộc giữa các Issue |
+| [Quy trình cá nhân](docs/PERSONAL_WORKFLOW.md) | Cách quản lý Issue, branch, commit và Pull Request |
+
+## 7. Cấu trúc repository dự kiến
+
 ```text
 smart-parking-system/
-├── frontend/                 # React + TypeScript
-├── backend/                  # Express API + Prisma
-├── alpr-service/             # Python + FastAPI + OpenCV + OCR
+├── frontend/             # React application
+├── backend/              # Express API và Prisma
+├── alpr-service/         # Python FastAPI và xử lý ảnh
 ├── iot/
-│   ├── mosquitto/            # Broker config
-│   └── node-red/             # Simulator flows
-├── infra/                    # Docker Compose
-├── docs/
-└── README.md
+│   ├── mosquitto/        # MQTT broker configuration
+│   └── node-red/         # IoT simulation flows
+├── infra/                # Docker Compose và cấu hình môi trường
+└── docs/                 # Tài liệu phân tích, thiết kế, kiểm thử
 ```
 
-Đây là cấu trúc đích, không phải danh sách thư mục đã tồn tại.
+Đây là cấu trúc mục tiêu; chỉ những thư mục và thành phần thực sự có trong repository mới được xem là đã triển khai.
 
-## 8. Tài liệu và quản lý công việc
-- [Kiến trúc hệ thống](docs/ARCHITECTURE.md)
-- [Thiết kế cơ sở dữ liệu](docs/DATABASE_DESIGN.md)
-- [Kế hoạch triển khai](docs/PROJECT_PLAN.md)
-- [Backlog triển khai](docs/IMPLEMENTATION_BACKLOG.md)
-- [Quy trình quản lý công việc cá nhân](docs/PERSONAL_WORKFLOW.md)
+## 8. Lộ trình thực hiện
 
-Đây là dự án cá nhân. GitHub Issues/PR dùng để tự quản lý công việc và hỗ trợ Mentor review; không áp dụng phân công thành viên hay trách nhiệm nhóm trưởng tổng hợp báo cáo tuần.
+1. **Foundation:** môi trường, backend/frontend nền tảng, xác thực và phân quyền.
+2. **Core parking workflow:** hạ tầng bãi, phương tiện, reservation, session và billing.
+3. **Smart integration:** ALPR, MQTT, Node-RED và luồng barrier.
+4. **Completion:** dashboard, realtime, kiểm thử, bảo mật, backup và demo.
 
-## 9. Thứ tự triển khai
-1. Docker Compose, PostgreSQL và Mosquitto.
-2. Backend foundation và Prisma.
-3. Frontend foundation.
-4. Authentication/RBAC.
-5. Nghiệp vụ gửi xe thủ công: hạ tầng bãi → phương tiện/reservation → session → invoice/payment.
-6. ALPR và MQTT/Node-RED sau khi luồng thủ công ổn định.
-7. Tích hợp đầu-cuối, dashboard, kiểm thử và đóng gói.
+Tiến độ thực tế được theo dõi qua [GitHub Issues](../../issues) và Pull Requests. Issue chỉ đóng sau khi chức năng đạt tiêu chí nghiệm thu và thay đổi được merge.
 
-## 10. Definition of Done cho MVP
-- Quản lý tập trung được nhiều bãi xe, không có tenant layer.
-- RBAC và resource scope được kiểm tra ở backend.
-- Xe vào/ra, phân bổ chỗ, tính phí và hóa đơn chạy được.
-- Node-RED trao đổi MQTT hai chiều với backend; event idempotent, command có ACK/timeout.
-- ALPR xử lý ảnh/video mẫu, trả candidate/confidence và có bước nhân viên xác nhận.
-- Dashboard cập nhật từ dữ liệu đã commit.
-- Có test cho luồng chính, phân quyền và các tình huống lỗi.
-- Có hướng dẫn cài đặt/demo; tài liệu phản ánh đúng trạng thái code thực tế.
+## 9. Cách chạy dự án
 
-## 11. Quy ước GitHub
-- `main` là nhánh ổn định; phát triển qua branch theo Issue và Pull Request.
-- Một Issue đại diện một kết quả có thể nghiệm thu; không tạo Issue cho từng file/hàm.
-- PR phải liên kết đúng Issue bằng `Closes #<number>` và nêu bằng chứng kiểm thử.
-- Chỉ đóng Issue sau khi Acceptance Criteria đạt và PR đã merge.
-- Repository Private; cấp quyền Mentor bằng đúng GitHub username khi có thông tin tài khoản.
-- Tài liệu kiến trúc là thiết kế mục tiêu, không đồng nghĩa tính năng đã được code hoặc kiểm thử.
+**Hiện chưa có hướng dẫn chạy ứng dụng hoàn chỉnh** vì source code và cấu hình môi trường chưa được triển khai. Hướng dẫn cài đặt sẽ được bổ sung cùng các Issue nền tảng sau khi Docker Compose, backend và frontend có thể khởi chạy được.
+
+## 10. Định hướng đánh giá
+
+Kết quả đề tài sẽ được đánh giá theo mức độ đáp ứng yêu cầu, tính đúng đắn nghiệp vụ, phân quyền, toàn vẹn dữ liệu, khả năng chịu lỗi, mức độ tích hợp ALPR/IoT, kiểm thử và khả năng tái lập demo.
+
+---
+
+**Lưu ý học thuật:** Tài liệu thiết kế thể hiện giải pháp dự kiến. Báo cáo kết quả phải phân biệt rõ nội dung đã phân tích, đã thiết kế, đã lập trình, đã kiểm thử và chưa hoàn thành.
