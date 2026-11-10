@@ -90,6 +90,11 @@ Backend là nơi quyết định nghiệp vụ và lưu trạng thái chuẩn. N
 
 | Tài liệu | Nội dung |
 |---|---|
+| [Danh mục tài liệu](docs/README.md) | Chỉ mục và quy tắc tổ chức tài liệu |
+| [Thuật ngữ](docs/GLOSSARY.md) | Giải thích thuật ngữ nghiệp vụ và kỹ thuật |
+| [Sơ đồ hệ thống](docs/diagrams/system-context.mmd) | Sơ đồ ngữ cảnh thành phần |
+| [Luồng xe vào](docs/diagrams/vehicle-entry-sequence.mmd) | Sequence diagram minh họa check-in và ACK |
+| [Quyết định kiến trúc ADR-001](docs/decisions/ADR-001-modular-monolith.md) | Lý do lựa chọn Modular Monolith |
 | [Tổng quan đề tài](docs/PROJECT_OVERVIEW.md) | Bối cảnh, bài toán, mục tiêu, phạm vi, đối tượng và phương pháp |
 | [Đặc tả yêu cầu](docs/REQUIREMENTS_SPECIFICATION.md) | Tác nhân, yêu cầu chức năng, phi chức năng và quy tắc nghiệp vụ |
 | [Kiến trúc hệ thống](docs/ARCHITECTURE.md) | Thành phần, trách nhiệm, luồng giao tiếp và quyết định kiến trúc |
