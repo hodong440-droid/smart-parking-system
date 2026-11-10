@@ -124,3 +124,54 @@ Dự án do một người trực tiếp phân tích, thiết kế và triển k
 Các yêu cầu về nhóm trưởng tổng hợp báo cáo tuần, tạo sheet mới và gửi trước 14:00 Thứ Bảy là hướng dẫn chung cho nhóm, không phải trách nhiệm của chủ dự án cá nhân này. Chỉ lập báo cáo cá nhân nếu Mentor yêu cầu riêng.
 
 Chi tiết: [PERSONAL_WORKFLOW.md](PERSONAL_WORKFLOW.md).
+
+
+## 9. Roadmap thực thi cho dự án cá nhân
+
+Roadmap cũ mô tả đầy đủ đích đến nhưng dễ khiến một người triển khai quá nhiều nhánh cùng lúc. Thứ tự dưới đây là thứ tự thực hiện; không mở rộng sang giai đoạn sau khi giai đoạn trước chưa có kết quả chạy được.
+
+### Milestone A – Nền tảng chạy được
+1. #2 Docker Compose: PostgreSQL và Mosquitto; Node-RED có thể chạy riêng ban đầu.
+2. #3 Backend foundation: Express, TypeScript, Prisma, health check, logging, validation.
+3. #4 Frontend foundation: React, TypeScript, Tailwind, routing, API client.
+4. #5 Auth/RBAC và resource scope.
+
+Điều kiện qua mốc: frontend gọi được backend; backend kết nối DB; migration chạy trên database rỗng; test 401/403 và scope cơ bản.
+
+### Milestone B – Nghiệp vụ gửi xe thủ công
+5. #6 Quản lý bãi, khu vực, vị trí, cổng và bảng giá.
+6. #7 Quản lý phương tiện và reservation.
+7. #8 Check-in/check-out, phân bổ chỗ, trạng thái session.
+8. #9 Tính phí, invoice và payment record mô phỏng/tiền mặt.
+
+Điều kiện qua mốc: staff tiếp nhận xe bằng nhập tay, phân chỗ, tìm lượt đang gửi, tính phí, ghi nhận thanh toán và cho xe ra. Luồng này phải hoạt động khi MQTT/ALPR tắt.
+
+### Milestone C – Tích hợp mô phỏng và nhận diện
+9. #10 ALPR service: chỉ tích hợp sau khi luồng thủ công ổn định; OCR có manual review.
+10. #11 MQTT + Node-RED: event/command, idempotency, ACK/timeout.
+11. #12 Kết nối cổng đầu-cuối: kết hợp ảnh ALPR, MQTT, session và barrier ảo.
+
+Điều kiện qua mốc: simulator chỉ phát tín hiệu; backend quyết định nghiệp vụ. Có fallback thủ công khi ALPR/MQTT/barrier lỗi.
+
+### Milestone D – Hoàn thiện sản phẩm
+12. #13 Dashboard/realtime/alerts và lịch sử hoạt động.
+13. #14 Test tổng thể, bảo mật, CI, backup/restore và tài liệu triển khai/demo.
+
+Điều kiện hoàn tất: kịch bản demo chạy trên máy mới theo README; test quan trọng pass; không còn lỗi nghiêm trọng về phân quyền, chiếm chỗ hoặc tính tiền.
+
+## 10. Quy tắc quản lý phạm vi
+- Chỉ có một Issue lớn đang In Progress tại một thời điểm; việc nhỏ có thể nằm trong cùng vertical slice.
+- Không tạo Issue cho từng file/hàm. Một Issue đại diện một kết quả người dùng/đầu ra kỹ thuật có thể nghiệm thu.
+- Không tạo Issue “hoàn thành toàn bộ hệ thống” quá lớn; tách theo vertical slice.
+- Không đóng Issue chỉ vì code đã viết; phải đạt Acceptance Criteria, test phù hợp và merge.
+- ALPR và MQTT vẫn thuộc mục tiêu demo đã chốt, nhưng không được chặn việc hoàn thiện luồng gửi xe thủ công.
+- Chưa triển khai thanh toán online thật, app mobile, phần cứng thật, microservices, Kubernetes hoặc multi-tenant.
+
+## 11. Các quyết định nghiệp vụ cần chốt trước migration
+1. Reservation MVP giữ suất theo capacity hay khóa vị trí cụ thể (khuyến nghị giữ suất theo capacity).
+2. Bảng giá MVP: theo giờ hay theo lượt; cách làm tròn và grace period.
+3. Một xe có được đồng thời có nhiều session ACTIVE trong các bãi khác nhau không.
+4. Email/phone nào bắt buộc đối với DRIVER; cách tạo tài khoản staff.
+5. Thanh toán MVP có hỗ trợ nhiều lần/partial payment hay chỉ một lần xác nhận đủ tiền.
+6. Thời hạn lưu ảnh/video và người có quyền xem/xóa.
+7. Lưu UTC và hiển thị Asia/Ho_Chi_Minh.
