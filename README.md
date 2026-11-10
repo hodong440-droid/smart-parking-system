@@ -1,70 +1,117 @@
 # Smart Parking System
-Hệ thống quản lý tập trung nhiều bãi đỗ xe thông minh.
 
-> Trạng thái: khởi tạo nền tảng kiến trúc và đặc tả. Mã nguồn ứng dụng chưa được triển khai.
+Nền tảng quản lý tập trung nhiều bãi đỗ xe, kết hợp mô phỏng IoT và nhận diện biển số bằng xử lý ảnh.
 
-## 1. Mục tiêu
-Xây dựng một nền tảng duy nhất để quản lý nhiều bãi đỗ xe tại các địa điểm khác nhau. Người quản trị hệ thống quản lý toàn bộ bãi xe; quản lý và nhân viên chỉ thao tác trong các bãi xe được phân công; tài xế có thể tìm kiếm, đặt chỗ và theo dõi lượt gửi xe.
+> **Trạng thái repository:** hiện đang ở giai đoạn đặc tả kiến trúc và kế hoạch. Chưa có ứng dụng chạy được, chưa có Prisma migration, MQTT flow hoặc dịch vụ AI được triển khai.
 
-**Phạm vi đã chốt:** quản lý tập trung nhiều bãi xe, không xây dựng mô hình doanh nghiệp/Organization hoặc multi-tenant.
+## 1. Phạm vi đã chốt
 
-## 2. Công nghệ
-| Thành phần | Công nghệ |
-|---|---|
-| Frontend | React, TypeScript, Tailwind CSS |
-| Backend API | Node.js, Express, TypeScript |
-| Database | PostgreSQL |
-| ORM / migrations | Prisma |
-| Authentication | JWT access token + refresh token, RBAC |
-| Realtime | Socket.IO |
-| Bản đồ | Google Maps hoặc Mapbox (sẽ lựa chọn khi tích hợp) |
-| Mô phỏng thiết bị | Parking Simulator; tích hợp cảm biến/barie thật ở giai đoạn sau |
+- Một nền tảng quản lý tập trung nhiều bãi đỗ xe tại các địa điểm khác nhau.
+- **Không có** Organization, Company, Tenant hoặc lớp quản lý doanh nghiệp.
+- Mô phỏng mức 2: website + Node-RED + MQTT Mosquitto; chưa yêu cầu phần cứng thật.
+- Nhận diện biển số được đưa vào phiên bản đầu tiên bằng Python + OpenCV + OCR, chạy trên máy tính với ảnh/video thử nghiệm.
+- Thiết kế để có thể kết nối ESP32, cảm biến và barrier thật trong giai đoạn mở rộng mà không phải viết lại nghiệp vụ lõi.
 
-## 3. Vai trò
-- `SYSTEM_ADMIN`: quản trị toàn hệ thống, quản lý người dùng, bãi xe và phân công nhân sự.
-- `PARKING_MANAGER`: quản lý hoạt động và cấu hình của các bãi xe được giao.
-- `PARKING_STAFF`: xử lý xe vào/ra, lượt gửi xe và vận hành tại bãi được giao.
-- `DRIVER`: quản lý phương tiện, tìm bãi, đặt chỗ, xem lịch sử và thanh toán.
+## 2. Công nghệ mục tiêu
 
-Quyền truy cập phải được kiểm tra ở backend. Vai trò không thay thế việc kiểm tra phạm vi bãi xe được phân công.
+| Thành phần | Công nghệ | Trách nhiệm |
+|---|---|---|
+| Web frontend | React, TypeScript, Tailwind CSS | Giao diện quản trị, tài xế, sơ đồ bãi xe |
+| Backend | Node.js, Express, TypeScript | API, nghiệp vụ, phân quyền, điều phối |
+| Database | PostgreSQL + Prisma | Dữ liệu nghiệp vụ và lịch sử |
+| Realtime | Socket.IO | Đẩy trạng thái bãi xe tới trình duyệt |
+| IoT messaging | MQTT Mosquitto | Truyền sự kiện thiết bị và lệnh mô phỏng |
+| IoT flow | Node-RED | Tạo kịch bản xe vào/ra, cảm biến, barrier ảo |
+| ALPR service | Python, FastAPI, OpenCV, OCR engine | Nhận ảnh/video và trả kết quả đọc biển số |
+| Local development | Docker Compose | Chạy PostgreSQL, MQTT broker và các thành phần phụ trợ |
 
-## 4. Phạm vi chức năng
-1. Tài khoản, đăng nhập, phân quyền và phân công người quản lý/nhân viên theo bãi xe.
-2. Quản lý bãi xe, khu vực, vị trí đỗ, cổng và sức chứa.
-3. Quản lý phương tiện và đặt chỗ.
-4. Ghi nhận xe vào/ra, phân bổ vị trí và tính phí.
-5. Hóa đơn, thanh toán và lịch sử giao dịch.
-6. Dashboard, thống kê công suất và doanh thu.
-7. Mô phỏng cảm biến, barie, sự kiện thiết bị và cảnh báo.
-8. Cập nhật trạng thái theo thời gian thực bằng Socket.IO.
+OCR engine sẽ được đóng sau một adapter để có thể thay đổi PaddleOCR/Tesseract hoặc engine phù hợp sau khi benchmark dữ liệu biển số Việt Nam. Không khóa kiến trúc vào một engine trước khi kiểm thử.
 
-## 5. Nguyên tắc nghiệp vụ
-- Một hệ thống quản lý nhiều bãi xe; không có bảng Organization/Tenant.
-- Một tài khoản quản lý hoặc nhân viên có thể được phân công vào nhiều bãi xe.
-- Quản lý/nhân viên chỉ được truy cập dữ liệu của bãi xe đã được phân công.
-- Trạng thái chỗ đỗ phải được cập nhật nhất quán khi đặt chỗ, xe vào và xe ra.
-- Tính phí phải dựa trên quy tắc giá có hiệu lực tại thời điểm phát sinh lượt gửi xe.
-- Giai đoạn MVP ưu tiên nghiệp vụ lõi và mô phỏng thiết bị; AI nhận diện biển số và phần cứng thật triển khai sau.
+## 3. Vai trò hệ thống
 
-## 6. Cấu trúc dự kiến
+- `SYSTEM_ADMIN`: quản trị toàn hệ thống, quản lý tài khoản, bãi xe và phân công nhân sự.
+- `PARKING_MANAGER`: quản lý hoạt động của các bãi xe được giao.
+- `PARKING_STAFF`: xử lý xe vào/ra và vận hành tại bãi được giao.
+- `DRIVER`: quản lý phương tiện, tìm bãi, đặt chỗ, theo dõi lượt gửi và thanh toán.
+
+Backend phải kiểm tra cả role lẫn phạm vi bãi xe được phân công. Không dùng việc ẩn nút trên frontend làm cơ chế bảo mật.
+
+## 4. Phạm vi chức năng phiên bản đầu
+
+1. Tài khoản, xác thực, RBAC và phân công nhân sự theo bãi.
+2. Quản lý nhiều bãi xe, khu vực, vị trí đỗ, cổng và bảng giá.
+3. Quản lý phương tiện, đặt chỗ và lượt gửi xe.
+4. Quy trình xe vào/ra, tính phí, hóa đơn và thanh toán mô phỏng.
+5. Sơ đồ bãi xe và dashboard cập nhật thời gian thực.
+6. Parking Simulator bằng Node-RED; cảm biến và barrier ảo giao tiếp qua MQTT.
+7. Dịch vụ nhận diện biển số từ ảnh/video; lưu kết quả, độ tin cậy và ảnh bằng chứng theo chính sách lưu trữ.
+8. Nhật ký sự kiện, cảnh báo và báo cáo vận hành.
+
+## 5. Kiến trúc ở mức cao
+
+```text
+React Web
+   | REST + Socket.IO
+   v
+Express API (Modular Monolith) ------ PostgreSQL
+   | MQTT publish/subscribe                 |
+   v                                        |
+Mosquitto MQTT Broker                       |
+   ^                                        |
+   | MQTT                                   |
+Node-RED Parking Simulator -----------------+
+   |
+   | HTTP image request / recognition result
+   v
+Python FastAPI ALPR Service
+(OpenCV + OCR engine)
 ```
+
+Backend là nguồn dữ liệu chuẩn cho trạng thái nghiệp vụ. MQTT dùng để truyền thông điệp thiết bị, không thay thế PostgreSQL. Node-RED mô phỏng thiết bị; Python ALPR xử lý ảnh/video và không tự ý cập nhật trạng thái chỗ đỗ.
+
+## 6. Nguyên tắc nghiệp vụ và kỹ thuật
+
+- Không tạo bảng Organization/Company/Tenant.
+- Một tài khoản quản lý/nhân viên có thể được phân công vào nhiều bãi xe.
+- Reservation, parking session, recognition result và sensor event là các khái niệm riêng.
+- Mọi MQTT event cần eventId để chống xử lý trùng; backend xác thực device/gate, kiểm tra dữ liệu và ghi nhận trước khi phát realtime.
+- Chỉ mở barrier ảo sau khi backend chấp thuận nghiệp vụ; không để Node-RED tự quyết định trạng thái thanh toán hoặc chỗ đỗ.
+- Kết quả OCR là dữ liệu gợi ý. Luồng MVP phải cho phép nhân viên xác nhận/sửa biển số khi độ tin cậy thấp.
+- Không lưu ảnh nhị phân trong PostgreSQL; lưu file ở vùng lưu trữ riêng và chỉ lưu metadata/path.
+- Không commit secret, token, ảnh biển số thật hoặc dữ liệu cá nhân vào Git.
+
+## 7. Cấu trúc repository mục tiêu
+
+```text
 smart-parking-system/
 ├── frontend/                 # React + TypeScript
 ├── backend/                  # Express API + Prisma
+├── alpr-service/             # Python + FastAPI + OpenCV + OCR
+├── iot/
+│   ├── mosquitto/            # MQTT broker config
+│   └── node-red/             # Flows và cấu hình simulator
+├── infra/                    # Docker Compose và cấu hình local
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── DATABASE_DESIGN.md
 │   └── PROJECT_PLAN.md
-├── .gitignore
 └── README.md
 ```
 
-Đây là cấu trúc mục tiêu; các thư mục ứng dụng sẽ được tạo ở các bước triển khai tiếp theo.
+Đây là cấu trúc mục tiêu, không phải danh sách thư mục đã tồn tại.
 
-## 7. Tài liệu
+## 8. Tài liệu
+
 - [Kiến trúc hệ thống](docs/ARCHITECTURE.md)
 - [Thiết kế cơ sở dữ liệu](docs/DATABASE_DESIGN.md)
 - [Kế hoạch triển khai](docs/PROJECT_PLAN.md)
 
-## 8. Trạng thái triển khai
-Hiện repository mới có đặc tả nền tảng. Chưa có frontend/backend chạy được, Prisma schema, migration hay kiểm thử. Không xem các chức năng trong tài liệu là chức năng đã hoàn thành.
+## 9. Tiêu chí hoàn thành MVP
+
+- Tạo và quản lý được nhiều bãi xe trong cùng hệ thống.
+- Tài khoản chỉ truy cập đúng phạm vi được phân quyền.
+- Mô phỏng được xe đến cổng, nhận diện/nhập biển số, kiểm tra điều kiện, mở barrier ảo, cấp chỗ, xe ra và tính phí.
+- MQTT event được backend xử lý idempotent; trạng thái web cập nhật realtime.
+- ALPR nhận ảnh/video mẫu, trả biển số và confidence; có bước nhân viên xác nhận.
+- Có test cho luồng xe vào/ra, phân quyền, event trùng và nhận diện thất bại.
+- README và tài liệu phản ánh đúng chức năng đã thực sự chạy được.
