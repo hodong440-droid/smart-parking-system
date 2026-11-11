@@ -60,3 +60,35 @@ Các thay đổi phải giữ nguyên quyết định đã chốt:
 | Ngày | Nội dung |
 |---|---|
 | 2026-11-11 | Chuẩn hóa tài liệu theo Sprint, Việt hóa hướng dẫn Issue/PR và lập nhật ký chỉnh sửa |
+
+
+## Đợt cập nhật: Chuẩn hóa nội dung GitHub Issues #2–#14
+
+**Ngày:** 2026-11-11
+
+### 1. Phạm vi thực hiện
+Đã cập nhật trực tiếp nội dung 13 Issue đang mở (#2 đến #14). Không thay đổi trạng thái Open/Closed và không tự đóng Issue.
+
+### 2. Nội dung đã chỉnh sửa
+- Chuẩn hóa tiêu đề và năm phần mô tả: Input, Output, Technical Approach, Acceptance Criteria, công việc liên quan/phụ thuộc.
+- Việt hóa phần mô tả nhu cầu và kết quả đầu ra; giữ thuật ngữ kỹ thuật chuẩn trong phần hướng xử lý.
+- Bổ sung chi tiết cấu hình môi trường, bảo mật, kiểm thử, dữ liệu và điều kiện nghiệm thu theo phạm vi từng Issue.
+- Làm rõ phụ thuộc giữa các Issue và phân biệt công việc có thể triển khai song song.
+- Làm rõ phạm vi MVP: không có Organization/Company/Tenant, không thanh toán online thật, không cần phần cứng vật lý.
+
+### 3. Các điểm kỹ thuật được làm rõ
+- **#5:** Kiểm soát quyền ở backend, giới hạn dữ liệu theo bãi xe, vòng đời refresh token và bảo vệ phiên.
+- **#7:** Chống overbooking bằng transaction/locking; cần chốt chính sách reservation trước migration.
+- **#8:** Tách trạng thái Parking Session khỏi trạng thái barrier; không coi publish command là ACK.
+- **#9:** Dùng kiểu Decimal cho tiền, idempotency cho thanh toán và snapshot bảng giá.
+- **#10:** ALPR chỉ trả kết quả gợi ý; nhân viên xác nhận; Express kiểm soát quyền media.
+- **#11:** MQTT event/command có ID, correlation, ACK, timeout và xử lý lặp; Node-RED không quyết định nghiệp vụ.
+- **#12:** Chỉ chuyển session sang ACTIVE/COMPLETED sau ACK hợp lệ hoặc fallback thủ công có audit.
+- **#13:** Dashboard và Socket.IO phải giới hạn theo quyền và bãi xe; doanh thu chỉ tính theo giao dịch đã thu.
+- **#14:** CI, kiểm thử, security review và backup/restore cần có bằng chứng thực tế.
+
+### 4. Những việc chưa được xác nhận
+- Các Issue #2–#14 vẫn ở trạng thái Open sau khi chuẩn hóa mô tả.
+- Chỉnh sửa Issue chỉ hoàn thiện đặc tả công việc, không đồng nghĩa chức năng đã được lập trình.
+- Các quyết định nghiệp vụ được ghi là cần xác minh vẫn phải được chốt trước migration liên quan.
+- Không có báo cáo test ứng dụng trong đợt này vì không thay đổi source code.
