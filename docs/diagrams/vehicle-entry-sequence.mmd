@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant S as Parking Staff
+    participant W as React Web
+    participant A as Express API
+    participant D as PostgreSQL
+    participant M as Mosquitto
+    participant N as Node-RED Barrier
+
+    S->>W: Xác nhận xe đến / biển số
+    W->>A: Gửi yêu cầu check-in
+    A->>D: Kiểm tra quyền, reservation, capacity
+    A->>D: Tạo gate operation PENDING và giữ suất
+    A->>M: Publish OPEN_BARRIER(commandId)
+    M->>N: Chuyển command
+    N->>N: Mô phỏng barrier
+    N->>M: Publish ACK(commandId)
+    M->>A: Backend nhận ACK
+    A->>D: Đối chiếu command, chuyển session ACTIVE
+    A-->>W: Cập nhật trạng thái sau commit
+
+    alt Không có ACK hoặc barrier lỗi
+        N-->>M: Không ACK / FAILED
+        M-->>A: Timeout hoặc lỗi
+        A->>D: Ghi trạng thái lỗi và audit
+        A-->>W: Yêu cầu nhân viên xử lý thủ công
+    end
