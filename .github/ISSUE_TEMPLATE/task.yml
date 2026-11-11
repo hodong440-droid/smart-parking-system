@@ -1,53 +1,61 @@
 name: Công việc / chức năng
-description: Ghi yêu cầu theo Input – Output – Technical Approach
-title: "[FEATURE] "
+description: Tạo Issue theo cấu trúc mô tả nhu cầu, kết quả, hướng xử lý và tiêu chí nghiệm thu
+title: "[CÔNG VIỆC] "
 labels:
   - enhancement
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Hãy mô tả nhu cầu bằng tiếng Việt dễ hiểu. Phần kỹ thuật cần đủ cụ thể để có thể triển khai và kiểm thử. Không ghi chức năng là hoàn thành khi chưa có kết quả thực tế.
   - type: textarea
     id: input
     attributes:
-      label: "1. Input – Nhu cầu người dùng"
-      description: "Ai sử dụng? Họ muốn giải quyết vấn đề gì? Mô tả bằng ngôn ngữ tự nhiên."
-      placeholder: "Người dùng muốn..."
+      label: "1. Mô tả – Nhu cầu người dùng (Input)"
+      description: "Ai sử dụng? Họ đang cần giải quyết vấn đề gì? Trong hoàn cảnh nào? Hãy mô tả bằng ngôn ngữ tự nhiên, không bắt đầu bằng tên bảng hoặc API."
+      placeholder: "Ví dụ: Nhân viên bãi xe cần..."
     validations:
       required: true
   - type: textarea
     id: output
     attributes:
-      label: "2. Output – Kết quả mong muốn"
-      description: "Sau khi hoàn thành, người dùng làm được gì và hệ thống hiển thị/phản hồi ra sao?"
-      placeholder: "Hệ thống cần..."
+      label: "2. Kết quả đầu ra mong muốn (Output)"
+      description: "Sau khi hoàn thành, người dùng có thể làm gì? Hệ thống hiển thị hoặc phản hồi như thế nào?"
+      placeholder: "Ví dụ: Người dùng có thể..., hệ thống sẽ..."
     validations:
       required: true
   - type: textarea
     id: technical
     attributes:
-      label: "3. Technical Approach – Hướng xử lý kỹ thuật"
-      description: "Nêu frontend, backend/API, database, validation, phân quyền, tích hợp và kiểm thử nếu liên quan."
+      label: "3. Hướng xử lý kỹ thuật (Technical Approach)"
+      description: "Mô tả giải pháp dự kiến: giao diện, module/API, dữ liệu, bảo mật, tích hợp và kiểm thử."
       placeholder: |
-        - Frontend:
-        - Backend/module/API:
-        - Database (bảng, trường, kiểu dữ liệu, quan hệ, constraint/index):
-        - Validation và phân quyền:
-        - Tích hợp:
-        - Kiểm thử:
+        - Frontend (màn hình/thành phần):
+        - Backend (module/API/nghiệp vụ):
+        - Database (bảng, trường, kiểu dữ liệu, khóa, quan hệ, ràng buộc, chỉ mục):
+        - Kiểm tra dữ liệu và phân quyền:
+        - Tích hợp (nếu có):
+        - Kiểm thử cần thực hiện:
     validations:
       required: true
   - type: textarea
     id: acceptance
     attributes:
-      label: "4. Acceptance Criteria – Tiêu chí nghiệm thu"
-      description: "Checklist cụ thể, có thể kiểm tra."
+      label: "4. Tiêu chí nghiệm thu (Acceptance Criteria)"
+      description: "Viết thành các điều kiện cụ thể có thể kiểm tra. Không dùng các câu chung chung như hoạt động tốt."
       placeholder: |
         - [ ] ...
         - [ ] ...
     validations:
       required: true
   - type: textarea
-    id: related
+    id: dependencies
     attributes:
-      label: "5. Issue liên quan / câu hỏi còn mở"
-      description: "Liên kết Issue bằng #number; ghi giả định hoặc câu hỏi cần xác minh."
+      label: "5. Công việc liên quan và phụ thuộc"
+      description: "Ghi số Issue liên quan, công việc cần hoàn thành trước, phần có thể làm song song và nội dung cần xác minh."
+      placeholder: |
+        - Phụ thuộc:
+        - Liên quan:
+        - Cần xác minh:
     validations:
       required: false

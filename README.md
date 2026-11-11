@@ -99,7 +99,10 @@ Backend là nơi quyết định nghiệp vụ và lưu trạng thái chuẩn. N
 | [Đặc tả yêu cầu](docs/REQUIREMENTS_SPECIFICATION.md) | Tác nhân, yêu cầu chức năng, phi chức năng và quy tắc nghiệp vụ |
 | [Kiến trúc hệ thống](docs/ARCHITECTURE.md) | Thành phần, trách nhiệm, luồng giao tiếp và quyết định kiến trúc |
 | [Thiết kế cơ sở dữ liệu](docs/DATABASE_DESIGN.md) | Bảng dữ liệu, trường, quan hệ và ràng buộc |
-| [Kế hoạch triển khai](docs/PROJECT_PLAN.md) | Giai đoạn, thứ tự triển khai và kịch bản demo |
+| [Kế hoạch triển khai](docs/PROJECT_PLAN.md) | Lộ trình Sprint, mục tiêu và kết quả bàn giao từng giai đoạn |
+| [Hướng dẫn Issue và Pull Request](docs/ISSUE_AND_PR_GUIDE.md) | Quy chuẩn viết yêu cầu, tiêu chí nghiệm thu và PR |
+| [Nhật ký chỉnh sửa tài liệu](docs/CHANGELOG_DOCUMENTATION.md) | Ghi rõ các mục đã chỉnh sửa và lý do |
+
 | [Kế hoạch kiểm thử](docs/TEST_AND_EVALUATION.md) | Chiến lược test, test case và tiêu chí đánh giá |
 | [Backlog](docs/IMPLEMENTATION_BACKLOG.md) | Danh sách công việc và phụ thuộc giữa các Issue |
 | [Quy trình cá nhân](docs/PERSONAL_WORKFLOW.md) | Cách quản lý Issue, branch, commit và Pull Request |

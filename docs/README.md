@@ -13,7 +13,9 @@ Thư mục `docs/` lưu hồ sơ phân tích, thiết kế, quyết định kỹ
 - [diagrams/](diagrams/): sơ đồ Mermaid dùng trong tài liệu.
 
 ## 3. Triển khai và đánh giá
-- [PROJECT_PLAN.md](PROJECT_PLAN.md): roadmap và điều kiện qua từng giai đoạn.
+- [PROJECT_PLAN.md](PROJECT_PLAN.md): lộ trình Sprint, mục tiêu, Issue và kết quả bàn giao.
+- [ISSUE_AND_PR_GUIDE.md](ISSUE_AND_PR_GUIDE.md): hướng dẫn viết Issue, tiêu chí nghiệm thu và Pull Request.
+- [CHANGELOG_DOCUMENTATION.md](CHANGELOG_DOCUMENTATION.md): nhật ký chỉnh sửa repository và lý do.
 - [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md): ánh xạ công việc sang GitHub Issues.
 - [TEST_AND_EVALUATION.md](TEST_AND_EVALUATION.md): chiến lược kiểm thử và nghiệm thu.
 - [PERSONAL_WORKFLOW.md](PERSONAL_WORKFLOW.md): quy trình phát triển cá nhân.
